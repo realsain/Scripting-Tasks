@@ -2,6 +2,21 @@
  * @NApiVersion 2.1
  * @NScriptType Restlet
  */
+
+/************************************************************************************************ 
+ *  
+ * OTP-9614 : Create API for updating the Item Fulfillment
+ * 
+************************************************************************************************* 
+ * 
+ * Author: Jobin and Jismi IT Services 
+ * 
+ * Date Created : 23-October-2025 
+ * 
+ * Description : RESTlet script to update Item Fulfillment records in NetSuite based on Sales Order details provided by external applications. 
+ * 
+*************************************************************************************************/ 
+
 define(['N/log', 'N/record', 'N/format'],
     /**
  * @param{log} log
@@ -10,6 +25,18 @@ define(['N/log', 'N/record', 'N/format'],
  */
     (log, record, format) => {
 
+        /**
+         * Updates an existing Item Fulfillment record in NetSuite with provided field values.
+         *
+         * @function updateItemFulfillment
+         * @param {Object} requestBody - The request body containing update data.
+         * @param {number|string} requestBody.itemFulfillmentId - The internal ID of the Item Fulfillment record to update.
+         * @param {string} [requestBody.trandate] - The transaction date in 'YYYY-MM-DD' format.
+         * @param {number|string} [requestBody.postingPeriod] - The internal ID of the posting period to set.
+         * @param {string} [requestBody.memo] - Optional memo or note for the record.
+         * @returns {Object} Returns a result object with update status and record ID.
+         * @throws {Error} Throws and logs an error if the record update fails.
+         */
         function updateItemFulfillment(requestBody) {
             try {
                 if (!requestBody || !requestBody.itemFulfillmentId) {

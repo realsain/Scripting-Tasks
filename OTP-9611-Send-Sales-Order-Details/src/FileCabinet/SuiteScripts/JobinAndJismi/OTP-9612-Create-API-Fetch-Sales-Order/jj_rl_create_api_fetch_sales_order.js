@@ -2,6 +2,21 @@
  * @NApiVersion 2.1
  * @NScriptType Restlet
  */
+
+/************************************************************************************************ 
+ *  
+ * OTP-9612 : Create API for the fetching the Sales order details
+ * 
+************************************************************************************************* 
+ * 
+ * Author: Jobin and Jismi IT Services 
+ * 
+ * Date Created : 22-October-2025 
+ * 
+ * Description : RESTlet script to retrieve open and specific Sales Orders from NetSuite enabling external systems to securely access real-time sales order data.
+ * 
+*************************************************************************************************/ 
+
 define(['N/log', 'N/record', 'N/search'],
     /**
  * @param{log} log
@@ -10,6 +25,13 @@ define(['N/log', 'N/record', 'N/search'],
  */
     (log, record, search) => {
 
+        /**
+         * Retrieves all open Sales Orders from NetSuite based on defined statuses.
+         * 
+         * @function getOpenSalesOrders
+         * @returns {Object[] | Object} Returns an array of open Sales Orders or an object with message "NOT FOUND" if none exist.
+         * @throws {Error} Logs an error if the search operation fails.
+         */
         function getOpenSalesOrders() {
             try {
                 const salesOrderSearch = search.create({
@@ -43,6 +65,14 @@ define(['N/log', 'N/record', 'N/search'],
             }
         }
 
+        /**
+         * Retrieves detailed information of a single Sales Order, including item sublist data.
+         * 
+         * @function getSingleSalesOrder
+         * @param {number|string} salesOrderId - The internal ID of the Sales Order to retrieve.
+         * @returns {Object} Returns a Sales Order object with header and item details or a "NOT FOUND" message if not found.
+         * @throws {Error} Logs an error if record loading or data extraction fails.
+         */
         function getSingleSalesOrder(salesOrderId) {
             try {
                 const salesOrderRecord = record.load({

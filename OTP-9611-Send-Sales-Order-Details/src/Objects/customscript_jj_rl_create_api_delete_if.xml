@@ -1,0 +1,22 @@
+<restlet scriptid="customscript_jj_rl_create_api_delete_if">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>JJ RL Create API Delete Item Fulfillment</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/JobinAndJismi/OTP-9615-Create-API-Delete-Item-Fulfillment/jj_rl_create_api_delete_item_fulfillment.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_jj_rl_create_api_delete_if">
+      <allemployees>T</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <audslctrole></audslctrole>
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>RELEASED</status>
+      <title>JJ RL Create API Delete Item Fulfillment</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</restlet>

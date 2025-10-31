@@ -2,6 +2,21 @@
  * @NApiVersion 2.1
  * @NScriptType Restlet
  */
+
+/************************************************************************************************ 
+ *  
+ * OTP-9613 : Create API for creating the Item Fulfillment
+ * 
+************************************************************************************************* 
+ * 
+ * Author: Jobin and Jismi IT Services 
+ * 
+ * Date Created : 22-October-2025 
+ * 
+ * Description : RESTlet script to create Item Fulfillment records in NetSuite based on Sales Order details provided by external applications. 
+ * 
+*************************************************************************************************/ 
+
 define(['N/log', 'N/record'],
     /**
  * @param{log} log
@@ -9,6 +24,19 @@ define(['N/log', 'N/record'],
  */
     (log, record) => {
 
+        /**
+         * Creates an Item Fulfillment record in NetSuite by transforming an existing Sales Order.
+         *
+         * @function createItemFulfillment
+         * @param {Object} requestBody - The input request body containing sales order and item details.
+         * @param {number|string} requestBody.salesOrderId - The internal ID of the Sales Order to be fulfilled.
+         * @param {Array<Object>} [requestBody.items] - Array of item details for fulfillment.
+         * @param {number|string} requestBody.items[].itemId - The internal ID of the item to fulfill.
+         * @param {number} [requestBody.items[].quantity] - The quantity to fulfill for the item.
+         * @param {number|string} [requestBody.items[].location] - The internal ID of the location for fulfillment.
+         * @returns {Object} Returns a result object with success or failure details.
+         * @throws {Error} Logs and returns an error if fulfillment creation fails.
+         */
         function createItemFulfillment(requestBody) {
             try {
                 if (!requestBody || !requestBody.salesOrderId) {
@@ -55,7 +83,7 @@ define(['N/log', 'N/record'],
                         });
                     }
 
-                    if (itemObj.location) { // Ensure location is provided
+                    if (itemObj.location) {
                         itemFulfillment.setCurrentSublistValue({
                             sublistId: 'item',
                             fieldId: 'location',

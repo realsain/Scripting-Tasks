@@ -15,6 +15,10 @@
  * 
  * Description : RESTlet script to delete Item Fulfillment records in NetSuite based on Sales Order details provided by external applications. 
  * 
+ * REVISION HISTORY
+ *
+ * @version 1.0 : 24-October-2025 :  The initial build was created by JJ0419
+ * 
 *************************************************************************************************/ 
 
 define(['N/log', 'N/record'],

@@ -15,6 +15,10 @@
  * 
  * Description : RESTlet script to retrieve open and specific Sales Orders from NetSuite enabling external systems to securely access real-time sales order data.
  * 
+ * REVISION HISTORY
+ *
+ * @version 1.0 : 22-October-2025 :  The initial build was created by JJ0419
+ * 
 *************************************************************************************************/ 
 
 define(['N/log', 'N/record', 'N/search'],

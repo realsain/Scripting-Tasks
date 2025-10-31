@@ -21,17 +21,15 @@
  * 
 *************************************************************************************************/ 
 
-define(['N/email', 'N/format', 'N/log', 'N/record', 'N/runtime', 'N/search', 'N/file'],
+define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
     /**
  * @param{email} email
- * @param{format} format
  * @param{log} log
  * @param{record} record
- * @param{runtime} runtime
  * @param{search} search
  * @param{file} file
  */
-    (email, format, log, record, runtime, search, file) => {
+    (email, log, record, search, file) => {
 
         const ADMIN_ID = -5;
 

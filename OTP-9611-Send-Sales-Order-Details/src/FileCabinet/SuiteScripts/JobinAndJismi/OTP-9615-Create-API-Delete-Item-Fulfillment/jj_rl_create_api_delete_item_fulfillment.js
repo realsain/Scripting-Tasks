@@ -29,6 +29,30 @@ define(['N/log', 'N/record'],
     (log, record) => {
 
         /**
+         * Defines the function that is executed when a DELETE request is sent to a RESTlet.
+         * @param {Object} requestParams - Parameters from HTTP request URL; parameters are passed as an Object (for all supported
+         *     content types)
+         * @returns {string | Object} HTTP response body; returns a string when request Content-Type is 'text/plain'; returns an
+         *     Object when request Content-Type is 'application/json' or 'application/xml'
+         * @since 2015.2
+         */
+        const doDelete = (requestParams) => {
+            try {
+                return deleteItemFulfillment(requestParams);
+            }
+            catch (error) {
+                log.error({
+                    title: 'Failed to process DELETE request',
+                    details: error
+                });
+                return {
+                    RESULT: "FAILED",
+                    error: error.message
+                };
+            }
+        }
+
+        /**
          * Deletes an existing Item Fulfillment record from NetSuite based on the provided internal ID.
          *
          * @function deleteItemFulfillment
@@ -81,30 +105,6 @@ define(['N/log', 'N/record'],
             catch (error) {
                 log.error({
                     title: 'Failed to delete Item Fulfillment',
-                    details: error
-                });
-                return {
-                    RESULT: "FAILED",
-                    error: error.message
-                };
-            }
-        }
-
-        /**
-         * Defines the function that is executed when a DELETE request is sent to a RESTlet.
-         * @param {Object} requestParams - Parameters from HTTP request URL; parameters are passed as an Object (for all supported
-         *     content types)
-         * @returns {string | Object} HTTP response body; returns a string when request Content-Type is 'text/plain'; returns an
-         *     Object when request Content-Type is 'application/json' or 'application/xml'
-         * @since 2015.2
-         */
-        const doDelete = (requestParams) => {
-            try {
-                return deleteItemFulfillment(requestParams);
-            }
-            catch (error) {
-                log.error({
-                    title: 'Failed to process DELETE request',
                     details: error
                 });
                 return {

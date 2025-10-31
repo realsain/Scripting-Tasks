@@ -30,6 +30,31 @@ define(['N/log', 'N/record', 'N/format'],
     (log, record, format) => {
 
         /**
+         * Defines the function that is executed when a PUT request is sent to a RESTlet.
+         * @param {string | Object} requestBody - The HTTP request body; request body are passed as a string when request
+         *     Content-Type is 'text/plain' or parsed into an Object when request Content-Type is 'application/json' (in which case
+         *     the body must be a valid JSON)
+         * @returns {string | Object} HTTP response body; returns a string when request Content-Type is 'text/plain'; returns an
+         *     Object when request Content-Type is 'application/json' or 'application/xml'
+         * @since 2015.2
+         */
+        const put = (requestBody) => {
+            try {
+                return updateItemFulfillment(requestBody);
+            }
+            catch (error) {
+                log.error({
+                    title: 'Failed to process PUT request',
+                    details: error
+                });
+                return {
+                    RESULT: "FAILED",
+                    error: error.message
+                };
+            }
+        }
+
+        /**
          * Updates an existing Item Fulfillment record in NetSuite with provided field values.
          *
          * @function updateItemFulfillment
@@ -96,31 +121,6 @@ define(['N/log', 'N/record', 'N/format'],
                 log.error({
                     title: 'Failed to update Item Fulfillment',
                     details: error.message
-                });
-                return {
-                    RESULT: "FAILED",
-                    error: error.message
-                };
-            }
-        }
-
-        /**
-         * Defines the function that is executed when a PUT request is sent to a RESTlet.
-         * @param {string | Object} requestBody - The HTTP request body; request body are passed as a string when request
-         *     Content-Type is 'text/plain' or parsed into an Object when request Content-Type is 'application/json' (in which case
-         *     the body must be a valid JSON)
-         * @returns {string | Object} HTTP response body; returns a string when request Content-Type is 'text/plain'; returns an
-         *     Object when request Content-Type is 'application/json' or 'application/xml'
-         * @since 2015.2
-         */
-        const put = (requestBody) => {
-            try {
-                return updateItemFulfillment(requestBody);
-            }
-            catch (error) {
-                log.error({
-                    title: 'Failed to process PUT request',
-                    details: error
                 });
                 return {
                     RESULT: "FAILED",

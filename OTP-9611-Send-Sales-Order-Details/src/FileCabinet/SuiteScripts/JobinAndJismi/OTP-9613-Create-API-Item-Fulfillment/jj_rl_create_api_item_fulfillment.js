@@ -29,6 +29,28 @@ define(['N/log', 'N/record'],
     (log, record) => {
 
         /**
+         * Defines the function that is executed when a POST request is sent to a RESTlet.
+         * @param {string | Object} requestBody - The HTTP request body; request body is passed as a string when request
+         *     Content-Type is 'text/plain' or parsed into an Object when request Content-Type is 'application/json' (in which case
+         *     the body must be a valid JSON)
+         * @returns {string | Object} HTTP response body; returns a string when request Content-Type is 'text/plain'; returns an
+         *     Object when request Content-Type is 'application/json' or 'application/xml'
+         * @since 2015.2
+         */
+        const post = (requestBody) => {
+            try {
+                return createItemFulfillment(requestBody);
+            }
+            catch (error) {
+                log.error({
+                    title: 'Failed to process POST request',
+                    details: error
+                });
+                return { RESULT: "FAILED", error: error.message };
+            }
+        }
+
+        /**
          * Creates an Item Fulfillment record in NetSuite by transforming an existing Sales Order.
          *
          * @function createItemFulfillment
@@ -121,28 +143,6 @@ define(['N/log', 'N/record'],
                     RESULT: "FAILED", 
                     error: error.message 
                 };
-            }
-        }
-
-        /**
-         * Defines the function that is executed when a POST request is sent to a RESTlet.
-         * @param {string | Object} requestBody - The HTTP request body; request body is passed as a string when request
-         *     Content-Type is 'text/plain' or parsed into an Object when request Content-Type is 'application/json' (in which case
-         *     the body must be a valid JSON)
-         * @returns {string | Object} HTTP response body; returns a string when request Content-Type is 'text/plain'; returns an
-         *     Object when request Content-Type is 'application/json' or 'application/xml'
-         * @since 2015.2
-         */
-        const post = (requestBody) => {
-            try {
-                return createItemFulfillment(requestBody);
-            }
-            catch (error) {
-                log.error({
-                    title: 'Failed to process POST request',
-                    details: error
-                });
-                return { RESULT: "FAILED", error: error.message };
             }
         }
 

@@ -1,0 +1,25 @@
+<scheduledscript scriptid="customscript_jj_ss_cust_overdue_reminder">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>JJ SS Customer Overdue Reminder</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/JobinAndJismi/OTP-9682-Customer-Overdue-Reminder/jj_ss_customer_overdue_reminder.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_jj_ss_cust_overdue_reminder">
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>SCHEDULED</status>
+      <title>JJ SS Customer Overdue Reminder</title>
+      <recurrence>
+        <monthly>
+          <everyxmonths>1</everyxmonths>
+          <repeat></repeat>
+          <startdate>2025-10-29</startdate>
+          <starttime>01:00:00Z</starttime>
+        </monthly>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</scheduledscript>

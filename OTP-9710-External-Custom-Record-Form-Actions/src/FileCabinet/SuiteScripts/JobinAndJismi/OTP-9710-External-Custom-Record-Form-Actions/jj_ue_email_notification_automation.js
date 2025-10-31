@@ -2,15 +2,73 @@
  * @NApiVersion 2.1
  * @NScriptType UserEventScript
  */
-define(['N/log', 'N/record', 'N/search', 'N/email'],
+
+/************************************************************************************************ 
+ *  
+ * OTP-9710 : External Custom Record form and actions
+ * 
+************************************************************************************************* 
+ * 
+ * Author: Jobin and Jismi IT Services 
+ * 
+ * Date Created : 28-October-2025 
+ * 
+ * Description : Suitelet and UserEvent scripts enable external users to submit customer queries directly into NetSuite without login access. 
+ * 
+ * REVISION HISTORY
+ *
+ * @version 1.0 : 28-October-2025 :  The initial build was created by JJ0419
+ * 
+*************************************************************************************************/ 
+
+define(['N/log', 'N/search', 'N/email'],
     /**
  * @param{log} log
- * @param{record} record
  * @param{search} search
  * @param{email} email
  */
-    (log, record, search, email) => {
+    (log, search, email) => {
 
+        /**
+         * Defines the function definition that is executed after record is submitted.
+         * @param {Object} scriptContext
+         * @param {Record} scriptContext.newRecord - New record
+         * @param {Record} scriptContext.oldRecord - Old record
+         * @param {string} scriptContext.type - Trigger type; use values from the context.UserEventType enum
+         * @since 2015.2
+         */
+        const afterSubmit = (scriptContext) => {
+            try {
+                if (scriptContext.type !== scriptContext.UserEventType.CREATE) return;
+
+                const newRec = scriptContext.newRecord;
+                const custName = newRec.getValue('custrecord_jj_customer_name');
+                const custEmail = newRec.getValue('custrecord_jj_customer_email');
+                const subject = newRec.getValue('custrecord_jj_subject');
+                const message = newRec.getValue('custrecord_jj_message');
+                const customerId = newRec.getValue('custrecord_jj_customer_reference');
+
+                log.audit('New Custom Record Created', `Customer: ${custName}, Email: ${custEmail}`);
+
+                if (!customerId) {
+                    log.audit('No Customer Linked', `External form email ${custEmail || 'N/A'} did not match any customer.`);
+                }
+
+                const salesRepEmail = customerId ? getSalesRepEmail(customerId) : null;
+
+                sendNotifications(custName, custEmail, subject, message, customerId, salesRepEmail);
+            }
+            catch (error) {
+                log.error('Error in afterSubmit', error);
+            }
+        };
+
+        /**
+         * Retrieves the Sales Representative's email address linked to a given customer.
+         *
+         * @param {number|string} customerId - Internal ID of the customer record.
+         * @returns {string|null} The Sales Representative's email address, or null if not found.
+         */
         function getSalesRepEmail(customerId) {
             try {
                 const customerSearch = search.create({
@@ -55,6 +113,18 @@ define(['N/log', 'N/record', 'N/search', 'N/email'],
             }
         }
 
+        /**
+         * Sends email notifications to the Admin and (if applicable) the Sales Representative
+         * when a new external contact form is submitted.
+         *
+         * @param {string} custName - Name of the customer submitting the form.
+         * @param {string} custEmail - Email address of the customer.
+         * @param {string} subject - Subject of the message.
+         * @param {string} message - Message body submitted by the customer.
+         * @param {number|string|null} customerId - Linked customer internal ID (if matched).
+         * @param {string|null} salesRepEmail - Sales Representative's email (if available).
+         * @returns {void}
+         */
         function sendNotifications(custName, custEmail, subject, message, customerId, salesRepEmail) {
             try {
                 const adminId = -5;
@@ -99,33 +169,6 @@ define(['N/log', 'N/record', 'N/search', 'N/email'],
                 log.error('Error in sendNotifications', error);
             }
         }
-
-        const afterSubmit = (scriptContext) => {
-            try {
-                if (scriptContext.type !== scriptContext.UserEventType.CREATE) return;
-
-                const newRec = scriptContext.newRecord;
-                const custName = newRec.getValue('custrecord_jj_customer_name');
-                const custEmail = newRec.getValue('custrecord_jj_customer_email');
-                const subject = newRec.getValue('custrecord_jj_subject');
-                const message = newRec.getValue('custrecord_jj_message');
-                const customerId = newRec.getValue('custrecord_jj_customer_reference');
-
-                log.audit('New Custom Record Created', `Customer: ${custName}, Email: ${custEmail}`);
-
-                if (!customerId) {
-                    log.audit('No Customer Linked', `External form email ${custEmail || 'N/A'} did not match any customer.`);
-                }
-
-                const salesRepEmail = customerId ? getSalesRepEmail(customerId) : null;
-
-                sendNotifications(custName, custEmail, subject, message, customerId, salesRepEmail);
-
-            }
-            catch (error) {
-                log.error('Error in afterSubmit', error);
-            }
-        };
 
         return { afterSubmit }
 

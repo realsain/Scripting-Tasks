@@ -2,16 +2,33 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/ui/serverWidget', 'N/record', 'N/search', 'N/email', 'N/log', 'N/runtime'],
+
+/************************************************************************************************ 
+ *  
+ * OTP-9710 : External Custom Record form and actions
+ * 
+************************************************************************************************* 
+ * 
+ * Author: Jobin and Jismi IT Services 
+ * 
+ * Date Created : 28-October-2025 
+ * 
+ * Description : Suitelet and UserEvent scripts enable external users to submit customer queries directly into NetSuite without login access. 
+ * 
+ * REVISION HISTORY
+ *
+ * @version 1.0 : 28-October-2025 :  The initial build was created by JJ0419
+ * 
+*************************************************************************************************/ 
+
+define(['N/ui/serverWidget', 'N/record', 'N/search', 'N/log'],
     /**
  * @param{serverWidget} serverWidget
  * @param{record} record
  * @param{search} search
- * @param{email} email
  * @param{log} log
- * @param{runtime} runtime
  */
-    (serverWidget, record, search, email, log, runtime) => {
+    (serverWidget, record, search, log) => {
         /**
          * Defines the Suitelet script trigger point.
          * @param {Object} scriptContext
@@ -19,7 +36,40 @@ define(['N/ui/serverWidget', 'N/record', 'N/search', 'N/email', 'N/log', 'N/runt
          * @param {ServerResponse} scriptContext.response - Suitelet response
          * @since 2015.2
          */
+        const onRequest = (scriptContext) => {
+            try {
+                if (scriptContext.request.method === 'GET') {
+                    const form = createContactForm();
+                    scriptContext.response.writePage(form);
+                }
+                else if (scriptContext.request.method === 'POST') {
+                    const custName = scriptContext.request.parameters.custpage_custname;
+                    const custEmail = scriptContext.request.parameters.custpage_email;
+                    const subject = scriptContext.request.parameters.custpage_subject;
+                    const message = scriptContext.request.parameters.custpage_message;
 
+                    const customerId = getCustomerByEmail(custEmail);
+                    const recordId = createCustomRecord(custName, custEmail, subject, message, customerId);
+
+                    log.audit('Custom Record Created', 'ID: ' + recordId);
+
+                    scriptContext.response.write(`
+                        <h2>Thank you for your submission!</h2>
+                        <p>Your message has been successfully submitted.</p>
+                    `);
+                }
+            }
+            catch (error) {
+                log.error('Error in onRequest', error);
+                scriptContext.response.write('<h2>Error:</h2><p>' + error.message + '</p>');
+            }
+        }
+
+        /**
+         * Creates and returns a Suitelet form for external customer contact.
+         * @returns {N/ui/serverWidget.Form} The created Suitelet form object
+         * @throws {Error} If form creation fails
+         */
         function createContactForm() {
             try {
                 const form = serverWidget.createForm({
@@ -59,6 +109,12 @@ define(['N/ui/serverWidget', 'N/record', 'N/search', 'N/email', 'N/log', 'N/runt
             }
         }
 
+        /**
+         * Retrieves a customer’s internal ID using their email address.
+         * @param {string} custEmail - Customer email to search for
+         * @returns {number|null} The internal ID of the customer, or null if not found
+         * @throws {Error} If the search operation fails
+         */
         function getCustomerByEmail(custEmail) {
             try {
                 const result = search.create({
@@ -78,6 +134,16 @@ define(['N/ui/serverWidget', 'N/record', 'N/search', 'N/email', 'N/log', 'N/runt
             }
         }
 
+        /**
+         * Creates a custom record storing the customer's form submission details.
+         * @param {string} custName - Customer’s name
+         * @param {string} custEmail - Customer’s email address
+         * @param {string} subject - Message subject
+         * @param {string} message - Message content
+         * @param {number|null} customerId - Related customer internal ID (if found)
+         * @returns {number} The internal ID of the created custom record
+         * @throws {Error} If record creation fails
+         */
         function createCustomRecord(custName, custEmail, subject, message, customerId) {
             try {
                 const customRecord = record.create({
@@ -111,35 +177,6 @@ define(['N/ui/serverWidget', 'N/record', 'N/search', 'N/email', 'N/log', 'N/runt
             catch (error) {
                 log.error('Error in createCustomRecord', error);
                 throw error;
-            }
-        }
-
-        const onRequest = (scriptContext) => {
-            try {
-                if (scriptContext.request.method === 'GET') {
-                    const form = createContactForm();
-                    scriptContext.response.writePage(form);
-                }
-                else if (scriptContext.request.method === 'POST') {
-                    const custName = scriptContext.request.parameters.custpage_custname;
-                    const custEmail = scriptContext.request.parameters.custpage_email;
-                    const subject = scriptContext.request.parameters.custpage_subject;
-                    const message = scriptContext.request.parameters.custpage_message;
-
-                    const customerId = getCustomerByEmail(custEmail);
-                    const recordId = createCustomRecord(custName, custEmail, subject, message, customerId);
-
-                    log.audit('Custom Record Created', 'ID: ' + recordId);
-
-                    scriptContext.response.write(`
-                        <h2>Thank you for your submission!</h2>
-                        <p>Your message has been successfully submitted.</p>
-                    `);
-                }
-            }
-            catch (error) {
-                log.error('Error in onRequest', error);
-                scriptContext.response.write('<h2>Error:</h2><p>' + error.message + '</p>');
             }
         }
 

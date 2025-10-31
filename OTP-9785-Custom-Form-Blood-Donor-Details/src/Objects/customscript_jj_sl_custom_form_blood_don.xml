@@ -1,0 +1,25 @@
+<suitelet scriptid="customscript_jj_sl_custom_form_blood_don">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>JJ SL Custom Form Blood Donor Details</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/JobinAndJismi/OTP-9785-Custom-Form-Blood-Donor-Details/jj_sl_custom_form_blood_donor_details.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_jj_sl_custom_form_blood_don">
+      <allemployees>T</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <audslctrole></audslctrole>
+      <eventtype></eventtype>
+      <isdeployed>T</isdeployed>
+      <isonline>F</isonline>
+      <loglevel>DEBUG</loglevel>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>RELEASED</status>
+      <title>JJ SL Custom Form Blood Donor Details</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</suitelet>

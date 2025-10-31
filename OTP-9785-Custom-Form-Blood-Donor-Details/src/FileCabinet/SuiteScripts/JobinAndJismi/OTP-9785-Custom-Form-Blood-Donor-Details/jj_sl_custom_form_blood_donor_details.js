@@ -2,14 +2,34 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
+
+/************************************************************************************************ 
+ *  
+ * OTP-9785 : Custom form to store blood donor details and track them in database
+ * 
+************************************************************************************************* 
+ * 
+ * Author: Jobin and Jismi IT Services 
+ * 
+ * Date Created : 29-October-2025 
+ * 
+ * Description : Suitelet script automate donor data collection through a dynamic Blood Donor Registration Form with validation and record creation.
+ * 
+ * REVISION HISTORY
+ *
+ * @version 1.0 : 29-October-2025 :  The initial build was created by JJ0419
+ * 
+*************************************************************************************************/
+
 define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
-    /**
+/**
  * @param{log} log
  * @param{record} record
  * @param{runtime} runtime
  * @param{serverWidget} serverWidget
  */
     (log, record, runtime, serverWidget) => {
+
         /**
          * Defines the Suitelet script trigger point.
          * @param {Object} scriptContext
@@ -17,7 +37,30 @@ define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
          * @param {ServerResponse} scriptContext.response - Suitelet response
          * @since 2015.2
          */
+        const onRequest = (scriptContext) => {
+            try {
+                if (scriptContext.request.method === 'GET') {
+                    displayDonorForm(scriptContext);
+                }
+                else if (scriptContext.request.method === 'POST') {
+                    processDonorSubmission(scriptContext);
+                }
+            }
+            catch (error) {
+                log.error('Unexpected Error in onRequest', error);
+                scriptContext.response.write(`Unexpected error occurred: ${error.message}`);
+            }
+        }
 
+        /**
+         * Displays the Blood Donor Registration Suitelet form.
+         *
+         * @param {Object} scriptContext - The Suitelet script context.
+         * @param {ServerRequest} scriptContext.request - The incoming request object.
+         * @param {ServerResponse} scriptContext.response - The outgoing response object.
+         * @throws {Error} Logs and writes an error message if form creation fails.
+         * @since 2025.1
+         */
         function displayDonorForm(scriptContext) {
             try {
                 const form = serverWidget.createForm({
@@ -120,6 +163,15 @@ define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
             }
         }
 
+        /**
+         * Processes the donor form submission and saves the data as a custom record.
+         *
+         * @param {Object} scriptContext - The Suitelet script context.
+         * @param {ServerRequest} scriptContext.request - The POST request object containing submitted form data.
+         * @param {ServerResponse} scriptContext.response - The response object for displaying the success or error message.
+         * @throws {Error} Logs and writes an error message if record creation fails.
+         * @since 2025.1
+         */
         function processDonorSubmission(scriptContext) {
             try {
                 const params = scriptContext.request.parameters;
@@ -165,22 +217,6 @@ define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
             catch (error) {
                 log.error('Error Submitting Donor Form', error);
                 scriptContext.response.write(`Error saving donor record: ${error.message}`);
-            }
-        }
-
-
-        const onRequest = (scriptContext) => {
-            try {
-                if (scriptContext.request.method === 'GET') {
-                    displayDonorForm(scriptContext);
-                }
-                else if (scriptContext.request.method === 'POST') {
-                    processDonorSubmission(scriptContext);
-                }
-            }
-            catch (error) {
-                log.error('Unexpected Error in onRequest', error);
-                scriptContext.response.write(`Unexpected error occurred: ${error.message}`);
             }
         }
 

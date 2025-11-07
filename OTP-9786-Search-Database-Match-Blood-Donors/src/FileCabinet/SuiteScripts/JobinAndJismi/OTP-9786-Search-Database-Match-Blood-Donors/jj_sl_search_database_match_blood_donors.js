@@ -43,6 +43,9 @@ define(['N/log', 'N/runtime', 'N/search', 'N/ui/serverWidget'],
                         search.createColumn({ 
                             name: 'custrecord_jj_blood_group', 
                             summary: 'GROUP' })
+                    ],
+                    filters: [
+                        ['isinactive', 'is', 'F']
                     ]
                 });
 
@@ -88,7 +91,9 @@ define(['N/log', 'N/runtime', 'N/search', 'N/ui/serverWidget'],
                         filters: [
                             ['custrecord_jj_blood_group', 'anyof', selectedBloodGroup],
                             'AND',
-                            ['custrecord_jj_last_donation_date', 'onorbefore', selectedDate]
+                            ['custrecord_jj_last_donation_date', 'onorbefore', selectedDate],
+                            'AND',
+                            ['isinactive', 'is', 'F']
                         ],
                         columns: [
                             'custrecord_jj_first_name',
@@ -186,6 +191,7 @@ define(['N/log', 'N/runtime', 'N/search', 'N/ui/serverWidget'],
             }
 
             form.addSubmitButton({ label: 'Search' });
+            form.addResetButton({ label: 'Reset' });
 
             scriptContext.response.writePage(form);
         }

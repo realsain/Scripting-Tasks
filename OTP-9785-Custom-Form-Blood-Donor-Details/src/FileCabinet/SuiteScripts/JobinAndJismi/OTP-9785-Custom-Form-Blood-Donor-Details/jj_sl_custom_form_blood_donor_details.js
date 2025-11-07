@@ -21,14 +21,15 @@
  * 
 *************************************************************************************************/
 
-define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
+define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget', 'N/search'],
 /**
  * @param{log} log
  * @param{record} record
  * @param{runtime} runtime
  * @param{serverWidget} serverWidget
+ * @param{search} search
  */
-    (log, record, runtime, serverWidget) => {
+    (log, record, runtime, serverWidget, search) => {
 
         /**
          * Defines the Suitelet script trigger point.
@@ -154,6 +155,9 @@ define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
                 form.addSubmitButton({
                     label: 'Submit Donor Details'
                 });
+                form.addResetButton({
+                    label: 'Reset Form'
+                });
 
                 scriptContext.response.writePage(form);
             }
@@ -189,6 +193,16 @@ define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
 
                 const formattedPhone = `(${normalizedPhone.slice(0, 3)}) ${normalizedPhone.slice(3, 6)}-${normalizedPhone.slice(6)}`;
 
+                const donorSearch = search.create({
+                    type: 'customrecord_jj_blood_donor',
+                    filters: [['custrecord_jj_phone_number', 'is', formattedPhone]],
+                    columns: ['internalid']
+                });
+
+                const existingDonor = donorSearch.run().getRange({ start: 0, end: 1 });
+                if (existingDonor && existingDonor.length > 0) {
+                    throw Error('A donor with this phone number already exists. Duplicate records are not allowed.');
+                }
 
                 const donorRecord = record.create({
                     type: 'customrecord_jj_blood_donor',

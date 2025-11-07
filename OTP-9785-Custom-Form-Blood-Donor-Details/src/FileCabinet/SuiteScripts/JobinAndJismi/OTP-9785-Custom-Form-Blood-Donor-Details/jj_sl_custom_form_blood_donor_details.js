@@ -193,6 +193,16 @@ define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget', 'N/search'],
 
                 const formattedPhone = `(${normalizedPhone.slice(0, 3)}) ${normalizedPhone.slice(3, 6)}-${normalizedPhone.slice(6)}`;
 
+                if (params.custpage_lastdonation) {
+                    const enteredDate = new Date(params.custpage_lastdonation);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    if (enteredDate > today) {
+                        throw Error('Last Donation Date cannot be a future date. Please select today or an earlier date.');
+                    }
+                }
+
                 const donorSearch = search.create({
                     type: 'customrecord_jj_blood_donor',
                     filters: [['custrecord_jj_phone_number', 'is', formattedPhone]],

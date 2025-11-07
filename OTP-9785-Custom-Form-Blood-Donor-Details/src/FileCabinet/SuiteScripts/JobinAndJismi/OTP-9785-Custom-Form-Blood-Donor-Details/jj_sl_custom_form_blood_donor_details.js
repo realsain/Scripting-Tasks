@@ -141,7 +141,7 @@ define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
 
                 form.addField({
                     id: 'custpage_phone',
-                    type: serverWidget.FieldType.PHONE,
+                    type: serverWidget.FieldType.TEXT,
                     label: 'Phone Number'
                 }).isMandatory = true;
 
@@ -181,6 +181,15 @@ define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
                     throw Error('Please fill all mandatory fields: First Name, Phone Number, and Blood Group.');
                 }
 
+                let normalizedPhone = params.custpage_phone.replace(/\D/g, '');
+
+                if (normalizedPhone.length !== 10) {
+                    throw Error('Invalid phone number. Please enter exactly 10 digits.');
+                }
+
+                const formattedPhone = `(${normalizedPhone.slice(0, 3)}) ${normalizedPhone.slice(3, 6)}-${normalizedPhone.slice(6)}`;
+
+
                 const donorRecord = record.create({
                     type: 'customrecord_jj_blood_donor',
                     isDynamic: true
@@ -189,14 +198,13 @@ define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
                 donorRecord.setValue('custrecord_jj_first_name', params.custpage_firstname);
                 donorRecord.setValue('custrecord_jj_last_name', params.custpage_lastname);
                 donorRecord.setValue('custrecord_jj_gender', params.custpage_gender);
-                donorRecord.setValue('custrecord_jj_phone_number', params.custpage_phone);
+                donorRecord.setValue('custrecord_jj_phone_number', formattedPhone);
                 donorRecord.setValue('custrecord_jj_blood_group', params.custpage_bloodgroup);
 
                 if (params.custpage_lastdonation) {
                     const formattedDate = new Date(params.custpage_lastdonation);
                     donorRecord.setValue('custrecord_jj_last_donation_date', formattedDate);
                 }
-
 
                 const recordId = donorRecord.save();
 
@@ -216,7 +224,21 @@ define(['N/log', 'N/record', 'N/runtime', 'N/ui/serverWidget'],
             }
             catch (error) {
                 log.error('Error Submitting Donor Form', error);
-                scriptContext.response.write(`Error saving donor record: ${error.message}`);
+
+                const form = serverWidget.createForm({
+                    title: 'Submission Error'
+                });
+                form.addField({
+                    id: 'custpage_error',
+                    type: serverWidget.FieldType.INLINEHTML,
+                    label: ' '
+                }).defaultValue = `
+                    <script>
+                        alert("${error.message.replace(/"/g, '\\"')}");
+                        history.back();
+                    </script>
+                `;
+                scriptContext.response.writePage(form);
             }
         }
 

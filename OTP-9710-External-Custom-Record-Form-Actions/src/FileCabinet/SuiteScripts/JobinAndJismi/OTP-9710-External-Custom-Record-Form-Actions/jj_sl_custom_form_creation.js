@@ -48,6 +48,17 @@ define(['N/ui/serverWidget', 'N/record', 'N/search', 'N/log'],
                     const subject = scriptContext.request.parameters.custpage_subject;
                     const message = scriptContext.request.parameters.custpage_message;
 
+                    if (isDuplicateEmail(custEmail)) {
+                        log.audit('Duplicate Submission Blocked', `Email already exists: ${custEmail}`);
+                        scriptContext.response.write(`
+                            <script>
+                                alert('A record with this email address already exists. Please use a different email or contact support.');
+                                history.back();
+                            </script>
+                        `);
+                        return;
+                    }
+                    
                     const customerId = getCustomerByEmail(custEmail);
                     const recordId = createCustomRecord(custName, custEmail, subject, message, customerId);
 
@@ -130,6 +141,33 @@ define(['N/ui/serverWidget', 'N/record', 'N/search', 'N/log'],
             }
             catch (error) {
                 log.error('Error in getCustomerByEmail', error);
+                throw error;
+            }
+        }
+
+        /**
+         * Checks whether a customer email already exists in the custom record 'JJ Custom Customer Form'.
+         * @param {string} custEmail - The email address to check for duplicates.
+         * @returns {boolean} Returns true if a duplicate email exists; otherwise, false.
+         * @throws {Error} Throws an error if the search operation fails.
+         */
+        function isDuplicateEmail(custEmail) {
+            try {
+                const duplicateSearch = search.create({
+                    type: 'customrecord_jj_custom_customer_form',
+                    filters: [['custrecord_jj_customer_email', 'is', custEmail]],
+                    columns: ['internalid']
+                }).run().getRange({ start: 0, end: 1 });
+
+                const isDuplicate = duplicateSearch.length > 0;
+
+                if (isDuplicate) {
+                    alert('This email already exists. Please use a different email address.');
+                }
+
+                return isDuplicate;
+            } catch (error) {
+                log.error('Error in isDuplicateEmail', error);
                 throw error;
             }
         }

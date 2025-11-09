@@ -111,7 +111,9 @@ define(['N/ui/serverWidget', 'N/record', 'N/search', 'N/log'],
                     label: 'Message'
                 }).isMandatory = true;
 
-                form.addSubmitButton({ label: 'Submit' });
+                form.addSubmitButton({ label: 'Search' });
+                form.addResetButton({ label: 'Reset' });
+                
                 return form;
             }
             catch (error) {

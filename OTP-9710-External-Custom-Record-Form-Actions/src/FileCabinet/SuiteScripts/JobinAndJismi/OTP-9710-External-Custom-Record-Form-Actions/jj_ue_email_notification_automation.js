@@ -134,29 +134,44 @@ define(['N/log', 'N/search', 'N/email'],
                     return;
                 }
 
-                const emailBody = `
-                    A new external contact form has been submitted:<br><br>
-                    <b>Customer Name:</b> ${custName || 'Not Provided'}<br>
-                    <b>Email:</b> ${custEmail || 'Not Provided'}<br>
-                    <b>Subject:</b> ${subject || 'Not Provided'}<br>
-                    <b>Message:</b><br>${message || 'No message provided'}<br><br>
-                    <b>Linked Customer:</b> ${customerId ? customerId : 'No match found'}
+                const formattedMessage = `
+                    <p><b>Customer Name:</b> ${custName || 'Not Provided'}</p>
+                    <p><b>Email:</b> ${custEmail || 'Not Provided'}</p>
+                    <p><b>Subject:</b> ${subject || 'Not Provided'}</p>
+                    <p><b>Message:</b><br>${message || 'No message provided'}</p>
+                    <p><b>Linked Customer:</b> ${customerId ? customerId : 'No match found'}</p>
+                `;
+
+                const adminEmailBody = `
+                    <p>Dear Admin,</p>
+                    <p>A new external contact form has been submitted. The details are as follows:</p>
+                    ${formattedMessage}
+                    <br>
+                    <p>Best regards,<br><b>NetSuite Automated Notification</b></p>
                 `;
 
                 email.send({
                     author: adminId,
                     recipients: adminId,
                     subject: `New External Form Submission - ${subject || 'No Subject'}`,
-                    body: emailBody
+                    body: adminEmailBody
                 });
                 log.audit('Admin Email Sent', `To Admin ID = ${adminId}`);
 
                 if (salesRepEmail) {
+                    const salesRepEmailBody = `
+                        <p>Dear Sales Representative,</p>
+                        <p>A new customer has submitted an inquiry through the external contact form. The details are below:</p>
+                        ${formattedMessage}
+                        <br>
+                        <p>Best regards,<br><b>NetSuite Automated Notification</b></p>
+                    `;
+
                     email.send({
                         author: adminId,
                         recipients: salesRepEmail,
                         subject: `New Customer Submission - ${custName || 'Unnamed Customer'}`,
-                        body: emailBody
+                        body: salesRepEmailBody
                     });
                     log.audit('Sales Rep Email Sent', salesRepEmail);
                 }
@@ -173,3 +188,4 @@ define(['N/log', 'N/search', 'N/email'],
         return { afterSubmit }
 
     });
+de3

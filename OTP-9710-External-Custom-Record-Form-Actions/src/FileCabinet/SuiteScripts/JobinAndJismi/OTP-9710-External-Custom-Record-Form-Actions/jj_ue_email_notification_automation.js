@@ -54,9 +54,9 @@ define(['N/log', 'N/search', 'N/email'],
                     log.audit('No Customer Linked', `External form email ${custEmail || 'N/A'} did not match any customer.`);
                 }
 
-                const salesRepEmail = customerId ? getSalesRepEmail(customerId) : null;
+                const { salesRepEmail, isSalesRepActive } = customerId ? getSalesRepInfo(customerId) : { salesRepEmail: null, isSalesRepActive: false };
 
-                sendNotifications(custName, custEmail, subject, message, customerId, salesRepEmail);
+                sendNotifications(custName, custEmail, subject, message, customerId, salesRepEmail, isSalesRepActive);
             }
             catch (error) {
                 log.error('Error in afterSubmit', error);
@@ -64,52 +64,48 @@ define(['N/log', 'N/search', 'N/email'],
         };
 
         /**
-         * Retrieves the Sales Representative's email address linked to a given customer.
-         *
+         * Retrieves the Sales Representative's email and active status linked to a given customer.
+         * 
          * @param {number|string} customerId - Internal ID of the customer record.
-         * @returns {string|null} The Sales Representative's email address, or null if not found.
+         * @returns {{ email: string|null, isActive: boolean }} Sales rep email and active status.
          */
-        function getSalesRepEmail(customerId) {
+        function getSalesRepInfo(customerId) {
             try {
                 const customerSearch = search.create({
                     type: search.Type.CUSTOMER,
-                    filters: [['internalid', 'is', customerId]],
+                    filters: [
+                        ['internalid', 'is', customerId],
+                        'AND',
+                        ['salesrep.isinactive', 'is', 'F']
+                    ],
                     columns: [
                         search.createColumn({ name: 'salesrep' }),
-                        search.createColumn({ name: 'email', join: 'salesrep' })
+                        search.createColumn({ name: 'email', join: 'salesrep' }),
+                        search.createColumn({ name: 'isinactive', join: 'salesrep' })
                     ]
                 });
 
                 const results = customerSearch.run().getRange({ start: 0, end: 1 });
 
                 if (!results || results.length === 0) {
-                    log.audit('Customer Not Found', `No customer found for ID: ${customerId}`);
-                    return null;
+                    log.audit('Customer or Active Sales Rep Not Found', `Either no customer or sales rep inactive for ID: ${customerId}`);
+                    return { salesRepEmail: null, isSalesRepActive: false };
                 }
 
                 const salesRepId = results[0].getValue('salesrep');
-                const salesRepEmail = results[0].getValue({
-                    name: 'email',
-                    join: 'salesrep'
-                });
+                const salesRepEmail = results[0].getValue({ name: 'email', join: 'salesrep' });
 
-                if (!salesRepId) {
-                    log.audit('No Sales Rep Assigned', `Customer ID ${customerId} does not have a Sales Rep.`);
-                    return null;
+                if (!salesRepId || !salesRepEmail) {
+                    log.audit('Sales Rep Missing Info', `ID: ${salesRepId || 'N/A'}, Email: ${salesRepEmail || 'N/A'}`);
+                    return { salesRepEmail: null, isSalesRepActive: false };
                 }
 
-                if (salesRepId && !salesRepEmail) {
-                    log.audit('Sales Rep Found But No Email', `Sales Rep ID ${salesRepId} has no email.`);
-                    return null;
-                }
+                log.audit('Active Sales Rep Email Found', salesRepEmail);
+                return { salesRepEmail, isSalesRepActive: true };
 
-                log.audit('Sales Rep Email Found', salesRepEmail);
-                return salesRepEmail;
-
-            }
-            catch (error) {
-                log.error('Error in getSalesRepEmail', error);
-                return null;
+            } catch (error) {
+                log.error('Error in getSalesRepInfo', error);
+                return { salesRepEmail: null, isSalesRepActive: false };
             }
         }
 
@@ -125,23 +121,19 @@ define(['N/log', 'N/search', 'N/email'],
          * @param {string|null} salesRepEmail - Sales Representative's email (if available).
          * @returns {void}
          */
-        function sendNotifications(custName, custEmail, subject, message, customerId, salesRepEmail) {
+        function sendNotifications(custName, custEmail, subject, message, customerId, salesRepEmail, isSalesRepActive) {
             try {
                 const adminId = -5;
-
-                if (!adminId) {
-                    log.audit('Admin Not Found', 'Admin ID is missing or invalid. Cannot send notification.');
-                    return;
-                }
 
                 const formattedMessage = `
                     <p><b>Customer Name:</b> ${custName || 'Not Provided'}</p>
                     <p><b>Email:</b> ${custEmail || 'Not Provided'}</p>
                     <p><b>Subject:</b> ${subject || 'Not Provided'}</p>
                     <p><b>Message:</b><br>${message || 'No message provided'}</p>
-                    <p><b>Linked Customer:</b> ${customerId ? customerId : 'No match found'}</p>
+                    <p><b>Linked Customer:</b> ${customerId || 'No match found'}</p>
                 `;
 
+                // Send email to Admin
                 const adminEmailBody = `
                     <p>Dear Admin,</p>
                     <p>A new external contact form has been submitted. The details are as follows:</p>
@@ -158,7 +150,8 @@ define(['N/log', 'N/search', 'N/email'],
                 });
                 log.audit('Admin Email Sent', `To Admin ID = ${adminId}`);
 
-                if (salesRepEmail) {
+                // Send email to active Sales Rep only
+                if (salesRepEmail && isSalesRepActive) {
                     const salesRepEmailBody = `
                         <p>Dear Sales Representative,</p>
                         <p>A new customer has submitted an inquiry through the external contact form. The details are below:</p>
@@ -174,12 +167,11 @@ define(['N/log', 'N/search', 'N/email'],
                         body: salesRepEmailBody
                     });
                     log.audit('Sales Rep Email Sent', salesRepEmail);
-                }
-                else {
-                    log.audit('No Sales Rep Email Available', 'Skipping Sales Rep notification.');
+                } else {
+                    log.audit('Sales Rep Notification Skipped', 'No active Sales Rep email available.');
                 }
 
-            }
+            } 
             catch (error) {
                 log.error('Error in sendNotifications', error);
             }
@@ -188,4 +180,3 @@ define(['N/log', 'N/search', 'N/email'],
         return { afterSubmit }
 
     });
-de3

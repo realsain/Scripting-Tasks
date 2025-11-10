@@ -68,9 +68,14 @@ define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
 
                         const salesRepId = customerRecord.getValue('salesrep');
                         const senderId = getSenderId(salesRepId);
-                        const senderName = getEmployeeName(senderId);
 
-                        const senderRole = (salesRepId) ? 'Sales Rep' : 'Administrator';
+                        if (!senderId) {
+                            log.audit('Email Skipped', `Skipped ${customerName} - Invalid or inactive Sales Rep. No email sent.`);
+                            continue;
+                        }
+
+                        const senderName = getEmployeeName(senderId);
+                        const senderRole = 'Sales Rep'; // ✅ Added this line
 
                         let senderEmail = null;
                         try {
@@ -98,7 +103,6 @@ define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
                         log.error('Customer Processing Error', customerErr);
                     }
                 }
-
             }
             catch (err) {
                 log.error('Script Error', err);
@@ -185,7 +189,36 @@ define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
          * @returns {number} Sender ID (Sales Rep or Administrator)
          */
         function getSenderId(salesRepId) {
-            return salesRepId || ADMIN_ID;
+            if (!salesRepId) {
+                log.audit('Skipped Email', 'No Sales Rep assigned. Email process skipped.');
+                return null;
+            }
+
+            try {
+                const empRecord = record.load({
+                    type: record.Type.EMPLOYEE,
+                    id: salesRepId
+                });
+
+                const isInactive = empRecord.getValue('isinactive');
+                const email = empRecord.getValue('email');
+
+                if (isInactive) {
+                    log.audit('Skipped Email', `Sales Rep (ID: ${salesRepId}) is inactive. Skipping email.`);
+                    return null;
+                }
+
+                if (!email) {
+                    log.audit('Skipped Email', `Sales Rep (ID: ${salesRepId}) has no email. Skipping email.`);
+                    return null;
+                }
+
+                return salesRepId;
+            } 
+            catch (err) {
+                log.error('getSenderId Error', err);
+                return null;
+            }
         }
 
         /**

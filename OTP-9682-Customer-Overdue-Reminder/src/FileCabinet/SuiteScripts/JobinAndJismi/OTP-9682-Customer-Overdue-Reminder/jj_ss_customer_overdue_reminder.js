@@ -53,7 +53,7 @@ define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
                     try {
                         const customerRecord = record.load({ type: record.Type.CUSTOMER, id: customerId });
                         const customerEmail = customerRecord.getValue('email');
-                        const customerName = customerRecord.getValue('entityid');
+                        const customerName = customerRecord.getValue('altname') || customerRecord.getValue('companyname') || customerRecord.getValue('entityid');
 
                         if (!customerEmail) {
                             log.error('Missing Customer Email', `Cannot send email to ${customerName} because reciever has no email. Skipping!`);
@@ -83,7 +83,7 @@ define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
                             continue;
                         }
 
-                        const csvFile = generateCSV(customerName, custInvoices);
+                        const csvFile = generateCSV(customerName, customerEmail, custInvoices);
                         sendEmail(customerEmail, customerName, senderId, csvFile, senderName, senderRole);
 
                         log.audit('Email Sent', `Email sent to ${customerName} from ${senderName} (${senderRole})`);
@@ -207,15 +207,15 @@ define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
          * @param {Array<Object>} invoices - List of overdue invoices
          * @returns {N/file.File} NetSuite file object containing the CSV
          */
-        function generateCSV(customerName, invoices) {
+        function generateCSV(customerName, customerEmail, invoices) {
             try {
-                let csvContent = 'Invoice Number,Invoice Amount,Days Overdue\n';
+                let csvContent = 'Customer Name,Customer Email,Invoice Document Number,Invoice Amount,Days Overdue\n';
                 invoices.forEach(inv => {
-                    csvContent += `${inv.invoiceNumber},${inv.amount},${inv.daysOverdue}\n`;
+                    csvContent += `${customerName},${customerEmail},${inv.invoiceNumber},${inv.amount},${inv.daysOverdue}\n`;
                 });
 
                 return file.create({
-                    name: `Overdue_Invoices_${customerName}.csv`,
+                    name: `Overdue_Invoices_${customerName.replace(/\s+/g, '_')}.csv`,
                     fileType: file.Type.CSV,
                     contents: csvContent
                 });

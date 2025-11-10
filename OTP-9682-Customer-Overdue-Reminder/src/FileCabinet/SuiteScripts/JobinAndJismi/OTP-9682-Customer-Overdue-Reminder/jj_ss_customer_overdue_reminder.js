@@ -54,6 +54,12 @@ define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
                         const customerRecord = record.load({ type: record.Type.CUSTOMER, id: customerId });
                         const customerEmail = customerRecord.getValue('email');
                         const customerName = customerRecord.getValue('altname') || customerRecord.getValue('companyname') || customerRecord.getValue('entityid');
+                        const isInactive = customerRecord.getValue('isinactive');
+
+                        if (isInactive) {
+                            log.audit('Inactive Customer Skipped', `Customer "${customerName}" (ID: ${customerId}) is inactive. Skipping email.`);
+                            continue;
+                        }
 
                         if (!customerEmail) {
                             log.error('Missing Customer Email', `Cannot send email to ${customerName} because reciever has no email. Skipping!`);

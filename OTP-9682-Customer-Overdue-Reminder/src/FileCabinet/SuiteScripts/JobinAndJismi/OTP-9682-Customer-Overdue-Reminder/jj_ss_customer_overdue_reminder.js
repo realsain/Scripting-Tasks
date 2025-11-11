@@ -69,13 +69,8 @@ define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
                         const salesRepId = customerRecord.getValue('salesrep');
                         const senderId = getSenderId(salesRepId);
 
-                        if (!senderId) {
-                            log.audit('Email Skipped', `Skipped ${customerName} - Invalid or inactive Sales Rep. No email sent.`);
-                            continue;
-                        }
-
                         const senderName = getEmployeeName(senderId);
-                        const senderRole = 'Sales Rep'; // ✅ Added this line
+                        const senderRole = (senderId === ADMIN_ID) ? 'Administrator' : 'Sales Rep';
 
                         let senderEmail = null;
                         try {
@@ -190,8 +185,8 @@ define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
          */
         function getSenderId(salesRepId) {
             if (!salesRepId) {
-                log.audit('Skipped Email', 'No Sales Rep assigned. Email process skipped.');
-                return null;
+                log.audit('No Sales Rep', 'No Sales Rep assigned. Email will be sent from Admin.');
+                return ADMIN_ID;
             }
 
             try {
@@ -204,13 +199,13 @@ define(['N/email', 'N/log', 'N/record', 'N/search', 'N/file'],
                 const email = empRecord.getValue('email');
 
                 if (isInactive) {
-                    log.audit('Skipped Email', `Sales Rep (ID: ${salesRepId}) is inactive. Skipping email.`);
-                    return null;
+                    log.audit('Inactive Sales Rep', `Sales Rep (ID: ${salesRepId}) is inactive. Email will be sent from Admin.`);
+                    return ADMIN_ID;
                 }
 
                 if (!email) {
-                    log.audit('Skipped Email', `Sales Rep (ID: ${salesRepId}) has no email. Skipping email.`);
-                    return null;
+                    log.audit('Sales Rep Missing Email', `Sales Rep (ID: ${salesRepId}) has no email. Email will be sent from Admin.`);
+                    return ADMIN_ID;
                 }
 
                 return salesRepId;

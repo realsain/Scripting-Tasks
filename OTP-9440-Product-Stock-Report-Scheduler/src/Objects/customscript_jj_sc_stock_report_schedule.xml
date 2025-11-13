@@ -1,0 +1,24 @@
+<scheduledscript scriptid="customscript_jj_sc_stock_report_schedule">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>JJ SC Stock Report Scheduler</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <scriptfile>[/SuiteScripts/JobinAndJismi/OTP-9440-Product-Stock-Report-Scheduler/jj_sc_stock_report_scheduler.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_jj_sc_stock_report_schedule">
+      <isdeployed>T</isdeployed>
+      <loglevel>DEBUG</loglevel>
+      <status>NOTSCHEDULED</status>
+      <title>JJ SC Stock Report Scheduler</title>
+      <recurrence>
+        <single>
+          <repeat></repeat>
+          <startdate>2025-11-13</startdate>
+          <starttime>02:00:00Z</starttime>
+        </single>
+      </recurrence>
+    </scriptdeployment>
+  </scriptdeployments>
+</scheduledscript>
